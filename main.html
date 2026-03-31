@@ -779,6 +779,50 @@
             document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
         }
 
+        function drawHoleFrame(ctx, rect, areaRect, scale, offsetX, offsetY, color) {
+            const holeX = (rect.left - areaRect.left) * scale + offsetX;
+            const holeY = (rect.top - areaRect.top) * scale + offsetY;
+            const holeW = rect.width * scale;
+            const holeH = rect.height * scale;
+            
+            // Matches the 12px-15px radius used in your CSS, scaled for export
+            const radius = 15 * scale; 
+
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            
+            // 1. Draw the outer boundary 
+            // We use the dimensions of the source area (1080x1920 or 1920x1080)
+            // to ensure the background covers the entire UI frame.
+            const boundW = (globalState.ratio === '16:9') ? (areaRect.width * scale) : 1080;
+            const boundH = (globalState.ratio === '16:9') ? (areaRect.height * scale) : 1920;
+            
+            ctx.rect(offsetX, offsetY, boundW, boundH);
+
+            // 2. Draw the inner rounded rectangle path
+            if (ctx.roundRect) {
+                ctx.roundRect(holeX, holeY, holeW, holeH, radius);
+            } else {
+                // Simple manual fallback for older browsers
+                manualRoundRect(ctx, holeX, holeY, holeW, holeH, radius);
+            }
+
+            // 3. Fill the 'evenodd' area (the space between the two rectangles)
+            ctx.fill('evenodd');
+            ctx.restore();
+        }
+
+        // Fallback helper if roundRect is not supported
+        function manualRoundRect(ctx, x, y, w, h, r) {
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
         function handleExport(targetHeight) {
             const isLandscape = globalState.ratio === '16:9';
             
@@ -825,10 +869,22 @@
                     ctx.drawImage(sourceCanvas, xOffset, 0);
                     downloadCanvas(outputCanvas, 'landscape');
                 } else {
-                    // --- 9:16 PORTRAIT LOGIC (Standard Vertical) ---
-                    // Because we used the correct scale, sourceCanvas is already 1080x1920
+                    // --- 9:16 PORTRAIT LOGIC (Rotated 90° Clockwise) ---
+                    
+                    // 1. Swap the final canvas dimensions for the rotation
+                    outputCanvas.width = finalHeight; 
+                    outputCanvas.height = finalWidth;
+
+                    // 2. Move the origin to the top-right corner to prepare for rotation
+                    ctx.translate(outputCanvas.width, 0);
+                    
+                    // 3. Rotate 90 degrees (Math.PI / 2 radians)
+                    ctx.rotate(Math.PI / 2);
+                    
+                    // 4. Draw the source (which is 1080x1920) onto the transformed context
                     ctx.drawImage(sourceCanvas, 0, 0);
-                    downloadCanvas(outputCanvas, 'portrait');
+                    
+                    downloadCanvas(outputCanvas, 'rotated-portrait');
                 }
             });
 }
