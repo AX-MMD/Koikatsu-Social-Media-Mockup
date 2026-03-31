@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koikatsu Social Media Mockup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        /* --- Global & Theme Variables --- */
+        :root {
+            --bg-page: #f0f2f5;
+            --bg-card: #ffffff;
+            --text-main: #0f1419;
+            --text-muted: #536471;
+            --border: #eff3f4;
+            --accent-red: #f91880;
+            --accent-blue: #1d9bf0;
+            --overlay-shadow: rgba(0,0,0,0.5);
+            /* YouTube Specific Light */
+            --yt-btn-bg: #f2f2f2;
+            --yt-btn-text: #0f0f0f;
+        }
+
+        [data-theme="dark"] {
+            --bg-page: #000000;
+            --bg-card: #000000;
+            --text-main: #e7e9ea;
+            --text-muted: #71767b;
+            --border: #2f3336;
+            /* YouTube Specific Dark */
+            --yt-btn-bg: #272727;
+            --yt-btn-text: #f1f1f1;
+        }
+
+        body {
+            margin: 0; background-color: var(--bg-page);
+            font-family: 'Roboto', sans-serif;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px; color: var(--text-main); transition: background 0.3s;
+        }
+
+        /* --- Capture Area Container --- */
+        #capture-area {
+            width: 360px; height: 640px;
+            background-color: var(--bg-card);
+            position: relative; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column;
+            border: 1px solid var(--border);
+        }
+
+        /* Generic Image Background */
+        .post-image-bg {
+            position: absolute; 
+            inset: 0; 
+            background-size: cover; 
+            background-position: center; 
+            z-index: 0;
+            background-color: transparent; /* Changed from #e0e0e0 */
+        }
+        [data-theme="dark"] .post-image-bg { 
+            background-color: transparent; /* Changed from #1a1a1a */
+        }
+
+        /* --- Editable Fields --- */
+        .editable { cursor: text; border-radius: 3px; outline: none; }
+        .editable:hover { background: rgba(29, 155, 240, 0.1); box-shadow: 0 0 0 2px rgba(29,155,240,0.5); }
+        .action-toggle { cursor: pointer; transition: transform 0.1s; }
+        .action-toggle:active { transform: scale(0.9); }
+
+        /* --- Platform Specific Layouts --- */
+        
+        /* 1. Instagram */
+        .ig-header { display: flex; align-items: center; padding: 10px 12px; z-index: 1; background: var(--bg-card); border-bottom: 1px solid var(--border); }
+        .ig-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-right: 10px; background: #ccc; }
+        .ig-body { flex-grow: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;}
+        .ig-footer { padding: 10px 12px; z-index: 1; background: var(--bg-card); }
+        .ig-actions { display: flex; justify-content: space-between; font-size: 22px; margin-bottom: 8px; }
+        .ig-actions-left { display: flex; gap: 14px; }
+        .ig-nav { display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); background: var(--bg-card); z-index: 1; font-size: 20px;}
+
+        /* 2. TikTok */
+        .tk-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 40%); z-index: 1; color: white; pointer-events: none;}
+        .tk-right-col { position: absolute; right: 10px; bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; z-index: 2; color: white; pointer-events: auto;}
+        .tk-avatar-wrap { position: relative; width: 44px; height: 44px; border-radius: 50%; background: white; padding: 1px; margin-bottom: 10px;}
+        .tk-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #ccc; }
+        .tk-plus { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); background: var(--accent-red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+        .tk-icon-group { display: flex; flex-direction: column; align-items: center; font-size: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .tk-icon-text { font-size: 12px; font-weight: 600; margin-top: 4px; }
+        .tk-bottom { position: absolute; bottom: 20px; left: 12px; right: 70px; z-index: 2; color: white; pointer-events: auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
+        
+        /* 3. Twitter / X */
+        .tw-card { background: var(--bg-card); padding: 12px 16px; display: flex; gap: 12px; height: 100%; box-sizing: border-box; }
+        .tw-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #ccc; flex-shrink: 0;}
+        .tw-content { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+        .tw-header { display: flex; gap: 4px; font-size: 15px; align-items: center; flex-wrap: wrap;}
+        .tw-name { font-weight: 700; }
+        .tw-handle { color: var(--text-muted); }
+        .tw-text { font-size: 15px; line-height: 20px; margin-bottom: 8px;}
+        .tw-img-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; position: relative; background: #ccc;}
+        .tw-actions { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 18px; margin-top: 12px; padding-right: 20px;}
+        .tw-action { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+
+        /* 4. YouTube Community */
+        .yt-card { background: var(--bg-card); padding: 16px; height: 100%; box-sizing: border-box; color: var(--text-main); }
+        .yt-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .yt-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #ccc; }
+        .yt-name { font-weight: 500; font-size: 14px; color: var(--text-main); }
+        .yt-time { font-size: 12px; color: var(--text-muted); margin-top: 2px;}
+        .yt-text { font-size: 14px; line-height: 1.4; margin-bottom: 12px; color: var(--text-main); }
+        .yt-img-wrap { width: 100%; aspect-ratio: 1; position: relative; background: #e0e0e0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+        .yt-actions { display: flex; gap: 12px; margin-top: 12px; color: var(--text-main); font-size: 18px; align-items: center;}
+        .yt-action-btn { display: flex; background: var(--yt-btn-bg); color: var(--yt-btn-text); border-radius: 20px; padding: 0 12px; height: 36px; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+
+        /* 5. Snapchat */
+        .sc-overlay { position: absolute; inset: 0; z-index: 1; pointer-events: none;}
+        .sc-top { position: absolute; top: 16px; left: 12px; display: flex; align-items: center; gap: 8px; z-index: 2; color: white; background: rgba(0,0,0,0.4); padding: 4px 12px 4px 4px; border-radius: 20px; pointer-events: auto;}
+        .sc-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #ccc; }
+        .sc-right { position: absolute; right: 12px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 2; color: white; font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); pointer-events: auto;}
+        .sc-bottom { position: absolute; bottom: 24px; left: 16px; right: 16px; z-index: 2; color: white; pointer-events: auto;}
+        .sc-text-bg { background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 12px; display: inline-block; font-size: 15px;}
+
+        /* --- UI Controls --- */
+        .controls { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 600px;}
+        .btn { padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; border: none; color: white; font-size: 14px; transition: 0.2s; }
+        .primary { background: var(--accent-blue); }
+        .secondary { background: #363636; }
+        .danger { background: var(--accent-red); }
+        .neutral { background: #555; }
+        .success { background: #00ba7c; }
+        
+        /* Dropdowns */
+        .dropdown { position: relative; }
+        .menu { display: none; position: absolute; bottom: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; min-width: 140px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.2); overflow: hidden;}
+        .menu.show { display: block; }
+        .menu button { display: block; width: 100%; padding: 12px; border: none; background: none; text-align: left; cursor: pointer; color: var(--text-main); font-weight: 500; transition: background 0.1s;}
+        .menu button:hover { background: rgba(128,128,128,0.1); }
+    </style>
+</head>
+<body>
+
+    <div id="capture-area"></div>
+
+    <p style="font-size: 13px; color: var(--text-muted); margin: 16px 0 8px 0;">Double-click text to edit. Toggles update globally.</p>
+
+    <div class="controls">
+        <input type="file" id="input-profile" style="display:none" accept="image/*">
+        <button id="btn-profile" class="btn primary"><i class="fa-solid fa-user-plus"></i></button>
+
+        <input type="file" id="input-post" style="display:none" accept="image/*">
+        <button id="btn-post" class="btn secondary"><i class="fa-solid fa-images"></i></button>
+
+        <div class="dropdown">
+            <button class="btn neutral" id="btn-site" onclick="toggleMenu('menu-site', event)">🌐 Instagram</button>
+            <div class="menu" id="menu-site">
+                <button onclick="setPlatform('instagram')">Instagram</button>
+                <button onclick="setPlatform('ig_reels')">Instagram Reels</button>
+                <button onclick="setPlatform('tiktok')">TikTok</button>
+                <button onclick="setPlatform('twitter')">Twitter (X)</button>
+                <button onclick="setPlatform('youtube')">YouTube</button>
+                <button onclick="setPlatform('yt_shorts')">YouTube Shorts</button>
+                <button onclick="setPlatform('snapchat')">Snapchat</button>
+            </div>
+        </div>
+
+        <button class="btn neutral" id="btn-theme" onclick="toggleTheme()">
+            <i class="fa-solid fa-lightbulb"></i>
+        </button>
+
+        <div class="dropdown">
+            <button class="btn neutral" id="btn-ratio" onclick="toggleMenu('menu-ratio', event)">9:16</button>
+            <div class="menu" id="menu-ratio">
+                <button onclick="setRatio('16:9')">16:9</button>
+                <button onclick="setRatio('9:16')">9:16</button>
+            </div>
+        </div>
+
+        <div class="dropdown">
+            <button class="btn success" id="btn-save" onclick="toggleMenu('menu-save', event)">
+                <i class="fa-solid fa-download"></i>
+            </button>
+            <div class="menu" id="menu-save">
+                <button onclick="handleExport(2160)">Export 4k</button>
+                <button onclick="handleExport(1440)">Export 2k</button>
+                <button onclick="handleExport(1080)">Export 1080p</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- UNIVERSAL DATA STRUCTURE ---
+        const globalState = {
+            platform: 'instagram',
+            ratio: '9:16',
+            images: {
+                profile: '', 
+                post: ''     
+            },
+            text: {
+                username: 'creative_user',
+                handle: '@creative',
+                caption: 'Exploring new dimensions! 🚀 Let me know what you think below.',
+                likes: '12.4K',
+                comments: '342',
+                shares: '1.2K',
+                time: '3h'
+            },
+            toggles: {
+                liked: false,
+                bookmarked: false,
+                tkFeed: true,
+                reelsFollowing: false,
+                isFollowing: false
+            }
+        };
+
+        const captureArea = document.getElementById('capture-area');
+
+        // --- AVATAR HELPER ---
+        const getAvatar = (src, size = "100%", isCircular = true) => {
+            const borderRadius = isCircular ? "50%" : "8px";
+            if (src && src.trim() !== "") {
+                return `<img src="${src}" style="width:${size}; height:${size}; border-radius:${borderRadius}; object-fit:cover; display:block;">`;
+            }
+            return `
+                <div style="width:${size}; height:${size}; border-radius:${borderRadius}; background:#e1e1e1; display:flex; align-items:center; justify-content:center; color:#adadad; overflow:hidden;">
+                    <i class="fa-solid fa-user" style="font-size: calc(${size} * 0.5); margin-top: 15%;"></i>
+                </div>`;
+        };
+
+        // --- TEMPLATE ENGINE ---
+        const templates = {
+            instagram: () => `
+                <div class="ig-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        ${getAvatar(globalState.images.profile, "30px")}
+                        <div class="editable" data-field="username" style="font-weight:700; font-size:14px;">${globalState.text.username}</div>
+                    </div>
+                    <i class="fa-solid fa-ellipsis" style="font-size: 14px;"></i>
+                </div>
+                <div class="ig-body">
+                    <div class="post-image-bg" style="background-image: url('${globalState.images.post}')"></div>
+                </div>
+                <div class="ig-footer">
+                    <div class="ig-actions">
+                        <div class="ig-actions-left" style="gap: 16px;">
+                            <i class="action-toggle fa-${globalState.toggles.liked ? 'solid' : 'regular'} fa-heart" data-toggle="liked" style="color: ${globalState.toggles.liked ? 'var(--accent-red)' : ''}; font-size: 24px;"></i>
+                            <i class="fa-regular fa-comment" style="font-size: 24px;"></i>
+                            <i class="fa-regular fa-paper-plane" style="font-size: 24px;"></i>
+                        </div>
+                        <i class="action-toggle fa-${globalState.toggles.bookmarked ? 'solid' : 'regular'} fa-bookmark" data-toggle="bookmarked" style="font-size: 24px;"></i>
+                    </div>
+                    <div style="font-weight:700; font-size:13px; margin-bottom:4px;"><span class="editable" data-field="likes">${globalState.text.likes}</span> likes</div>
+                    <div style="font-size:13px;"><b class="editable" data-field="username">${globalState.text.username}</b> <span class="editable" data-field="caption">${globalState.text.caption}</span></div>
+                    <div class="editable" data-field="time" style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">${globalState.text.time}</div>
+                </div>
+                <div class="ig-nav">
+                    <i class="fa-solid fa-house"></i><i class="fa-solid fa-magnifying-glass"></i><i class="fa-regular fa-square-plus"></i><i class="fa-solid fa-clapperboard"></i>
+                    ${getAvatar("", "24px")}
+                </div>
+            `,
+
+            ig_reels: () => `
+                <div class="post-image-bg" style="background-image: url('${globalState.images.post}')"></div>
+                <div class="tk-overlay" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.4) 100%);"></div>
+                <div style="position: absolute; top: 0; left: 0; right: 0; padding: 20px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 5; color: white;">
+                    <i class="fa-solid fa-chevron-left" style="font-size: 20px;"></i>
+                    <div style="display: flex; gap: 15px; font-weight: 700; font-size: 18px;">
+                        <span class="action-toggle" data-toggle="reelsFollowing" style="opacity: ${globalState.toggles.reelsFollowing ? '1' : '0.6'}">Following</span>
+                        <span class="action-toggle" data-toggle="reelsFollowing" style="opacity: ${!globalState.toggles.reelsFollowing ? '1' : '0.6'}">For You</span>
+                    </div>
+                    <i class="fa-solid fa-camera" style="font-size: 22px;"></i>
+                </div>
+                <div style="position: absolute; right: 12px; bottom: 100px; display: flex; flex-direction: column; align-items: center; gap: 18px; z-index: 5; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                    <div class="action-toggle" data-toggle="liked" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                        <i class="fa-${globalState.toggles.liked ? 'solid' : 'regular'} fa-heart" style="font-size: 28px; color: ${globalState.toggles.liked ? 'var(--accent-red)' : 'white'}"></i>
+                        <span class="editable" data-field="likes" style="font-size: 12px; font-weight: 600;">${globalState.text.likes}</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;"><i class="fa-regular fa-comment" style="font-size: 28px;"></i><span class="editable" data-field="comments" style="font-size: 12px; font-weight: 600;">${globalState.text.comments}</span></div>
+                    <i class="fa-regular fa-paper-plane" style="font-size: 26px;"></i>
+                    <i class="action-toggle fa-${globalState.toggles.bookmarked ? 'solid' : 'regular'} fa-bookmark" data-toggle="bookmarked" style="font-size: 24px;"></i>
+                    <i class="fa-solid fa-ellipsis" style="font-size: 20px;"></i>
+                    <div style="width: 30px; height: 30px; border: 2px solid white; border-radius: 6px; overflow: hidden; margin-top: 5px;">
+                        ${getAvatar(globalState.images.profile, "100%", false)}
+                    </div>
+                </div>
+                <div style="position: absolute; bottom: 80px; left: 15px; right: 70px; z-index: 5; color: white;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        ${getAvatar(globalState.images.profile, "32px")}
+                        <span class="editable" data-field="username" style="font-weight: 700; font-size: 14px;">${globalState.text.username}</span>
+                        <button class="action-toggle" data-toggle="isFollowing" style="background: ${globalState.toggles.isFollowing ? 'rgba(255,255,255,0.2)' : 'transparent'}; color: white; border: ${globalState.toggles.isFollowing ? 'none' : '1px solid white'}; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                            ${globalState.toggles.isFollowing ? 'Following' : 'Follow'}
+                        </button>
+                    </div>
+                    <div class="editable" data-field="caption" style="font-size: 14px; line-height: 1.4; margin-bottom: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${globalState.text.caption}</div>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 15px; width: fit-content;">
+                        <i class="fa-solid fa-music"></i><span class="editable" data-field="username">${globalState.text.username}</span> • Original Audio
+                    </div>
+                </div>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: black; display: flex; justify-content: space-around; align-items: center; z-index: 5; color: white; font-size: 22px; border-top: 0.1px solid #333;">
+                    <i class="fa-solid fa-house"></i><i class="fa-solid fa-magnifying-glass"></i><i class="fa-regular fa-square-plus"></i><i class="fa-solid fa-clapperboard"></i>
+                    ${getAvatar("", "24px")}
+                </div>
+            `,
+
+            tiktok: () => `
+                <div class="post-image-bg" style="background-image: url('${globalState.images.post}')"></div>
+                <div class="tk-overlay" style="background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 85%, rgba(0,0,0,0.3) 100%);"></div>
+                
+                <div style="position: absolute; top: 0; left: 0; right: 0; padding: 25px 20px; display: flex; justify-content: center; align-items: center; z-index: 10; color: white;">
+                    <div style="display: flex; gap: 18px; font-weight: 700; font-size: 17px; position: relative; letter-spacing: 0.3px;">
+                        <span style="opacity: 0.6; cursor: pointer;">Following</span>
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <span style="opacity: 1; cursor: pointer;">For You</span>
+                            <div style="width: 24px; height: 3px; background: white; margin-top: 5px; border-radius: 2px;"></div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 20px; font-size: 22px; opacity: 0.9;"></i>
+                </div>
+
+                <div style="position: absolute; right: 8px; bottom: 100px; display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 10; width: 60px;">
+                    <div class="action-toggle" data-toggle="isFollowing" style="position: relative; margin-bottom: 12px; cursor: pointer;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; border: 1px solid white; overflow: hidden; background: #222;">
+                            ${getAvatar(globalState.images.profile, "48px")}
+                        </div>
+                        <div style="display: ${globalState.toggles.isFollowing ? 'none' : 'flex'}; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #ff004f; color: white; border-radius: 50%; width: 22px; height: 22px; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white;">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                    </div>
+
+                    <div class="action-toggle" data-toggle="liked" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+                        <i class="fa-solid fa-heart" style="color: ${globalState.toggles.liked ? '#ff004f' : 'white'}; font-size: 36px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span class="editable" data-field="likes" style="font-size: 12px; font-weight: 600; color: white; margin-top: 4px;">${globalState.text.likes}</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+                        <i class="fa-solid fa-comment-dots" style="color: white; font-size: 36px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span class="editable" data-field="comments" style="font-size: 12px; font-weight: 600; color: white; margin-top: 4px;">${globalState.text.comments}</span>
+                    </div>
+
+                    <div class="action-toggle" data-toggle="bookmarked" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+                        <i class="fa-solid fa-bookmark" style="color: ${globalState.toggles.bookmarked ? '#face15' : 'white'}; font-size: 34px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span style="font-size: 12px; font-weight: 600; color: white; margin-top: 4px;">${globalState.text.shares}</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+                        <i class="fa-solid fa-share" style="color: white; font-size: 30px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span style="font-size: 12px; font-weight: 600; color: white; margin-top: 4px;">Share</span>
+                    </div>
+
+                    <div style="width: 48px; height: 48px; background: #111; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 10px solid #222; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+    
+                    </div>
+                </div>
+
+                <div style="position: absolute; bottom: 85px; left: 12px; right: 80px; z-index: 10; color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.6);">
+                    <div style="font-weight: 700; font-size: 16px; margin-bottom: 8px; letter-spacing: 0.2px;">
+                        @<span class="editable" data-field="username">${globalState.text.username}</span>
+                    </div>
+                    <div class="editable" data-field="caption" style="font-size: 14px; line-height: 1.4; margin-bottom: 12px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                        ${globalState.text.caption}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                        <i class="fa-solid fa-music" style="font-size: 12px;"></i>
+                        <div style="overflow: hidden; white-space: nowrap;">
+                            <span class="editable" data-field="username">${globalState.text.username}</span> - Original Sound
+                        </div>
+                    </div>
+                </div>
+
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 65px; background: black; display: flex; justify-content: space-around; align-items: center; z-index: 10; color: white; font-size: 10px; border-top: 0.3px solid #333; padding-bottom: 10px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;"><i class="fa-solid fa-house" style="font-size: 20px;"></i><span>Home</span></div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.6;"><i class="fa-solid fa-user-group" style="font-size: 20px;"></i><span>Friends</span></div>
+                    
+                    <div style="position: relative; width: 45px; height: 28px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: black; font-size: 18px;">
+                        <div style="position: absolute; left: -4px; width: 100%; height: 100%; background: #69C9D0; border-radius: 8px; z-index: -1;"></div>
+                        <div style="position: absolute; right: -4px; width: 100%; height: 100%; background: #EE1D52; border-radius: 8px; z-index: -1;"></div>
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.6;"><i class="fa-solid fa-message" style="font-size: 20px;"></i><span>Inbox</span></div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.6;"><i class="fa-solid fa-user" style="font-size: 20px;"></i><span>Profile</span></div>
+                </div>
+            `,
+
+            twitter: () => `
+                <div class="tw-card">
+                    <div style="position: absolute; top: 12px; right: 12px; color: var(--text-muted);"><i class="fa-solid fa-ellipsis"></i></div>
+                    ${getAvatar(globalState.images.profile, "40px")}
+                    <div class="tw-content">
+                        <div class="tw-header">
+                            <span class="tw-name editable" data-field="username">${globalState.text.username}</span>
+                            <span class="tw-handle editable" data-field="handle">${globalState.text.handle}</span>
+                            <span class="tw-handle">·</span>
+                            <span class="tw-handle editable" data-field="time">${globalState.text.time}</span>
+                        </div>
+                        <div class="tw-text editable" data-field="caption">${globalState.text.caption}</div>
+                        <div class="tw-img-wrap">
+                            <div class="post-image-bg" style="background-image: url('${globalState.images.post}')"></div>
+                        </div>
+                        <div class="tw-actions">
+                            <div class="tw-action"><i class="fa-regular fa-comment"></i> <span class="editable" data-field="comments">${globalState.text.comments}</span></div>
+                            <div class="tw-action"><i class="fa-solid fa-retweet"></i> <span class="editable" data-field="shares">${globalState.text.shares}</span></div>
+                            <div class="tw-action action-toggle" data-toggle="liked" style="color: ${globalState.toggles.liked ? '#f91880' : ''}">
+                                <i class="fa-${globalState.toggles.liked ? 'solid' : 'regular'} fa-heart"></i> <span class="editable" data-field="likes">${globalState.text.likes}</span>
+                            </div>
+                            <div class="tw-action"><i class="fa-solid fa-chart-simple"></i> <span>14K</span></div>
+                            <div style="display: flex; gap: 15px;">
+                                <i class="action-toggle fa-${globalState.toggles.bookmarked ? 'solid' : 'regular'} fa-bookmark" data-toggle="bookmarked" style="color: ${globalState.toggles.bookmarked ? 'var(--accent-blue)' : ''}"></i>
+                                <i class="fa-regular fa-share-from-square"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+
+            youtube: () => `
+                <div class="yt-card">
+                    <div style="position: absolute; top: 15px; right: 10px; color: var(--text-main);"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                    <div class="yt-header">
+                        ${getAvatar(globalState.images.profile, "36px")}
+                        <div>
+                            <div class="yt-name editable" data-field="username">${globalState.text.username}</div>
+                            <div class="yt-time editable" data-field="time">${globalState.text.time} ago</div>
+                        </div>
+                    </div>
+                    <div class="yt-text editable" data-field="caption">${globalState.text.caption}</div>
+                    <div class="yt-img-wrap">
+                        <div class="post-image-bg" style="background-image: url('${globalState.images.post}')"></div>
+                    </div>
+                    <div class="yt-actions">
+                        <div class="yt-action-btn" style="padding: 0;">
+                            <div class="action-toggle" data-toggle="liked" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 0 12px; border-right: 1px solid var(--border); height: 100%;">
+                                <i class="fa-${globalState.toggles.liked ? 'solid' : 'regular'} fa-thumbs-up" style="font-size: 18px;"></i> 
+                                <span class="editable" data-field="likes">${globalState.text.likes}</span>
+                            </div>
+                            <div style="padding: 0 12px; cursor: pointer;"><i class="fa-regular fa-thumbs-down" style="font-size: 18px;"></i></div>
+                        </div>
+                        <div class="yt-action-btn">
+                            <i class="fa-regular fa-comment" style="font-size: 18px;"></i>
+                            <span class="editable" data-field="comments">${globalState.text.comments}</span>
+                        </div>
+                        <div class="yt-action-btn" style="margin-left: auto; background: transparent;">
+                            <i class="fa-solid fa-share" style="font-size: 18px; transform: scaleX(-1);"></i>
+                        </div>
+                    </div>
+                </div>
+            `,
+
+            yt_shorts: () => `
+                <div class="post-image-bg" style="background-image: url('${globalState.images.post}')"></div>
+                
+                <div class="tk-overlay" style="background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 25%, rgba(0,0,0,0) 50%);"></div>
+                
+                <div style="position: absolute; top: 0; left: 0; right: 0; padding: 15px; display: flex; justify-content: flex-end; align-items: center; gap: 20px; z-index: 10; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                    <i class="fa-solid fa-magnifying-glass" style="font-size: 20px;"></i>
+                    <i class="fa-solid fa-camera" style="font-size: 20px;"></i>
+                    <i class="fa-solid fa-ellipsis-vertical" style="font-size: 20px;"></i>
+                </div>
+
+                <div style="position: absolute; right: 8px; bottom: 85px; display: flex; flex-direction: column; align-items: center; gap: 22px; z-index: 10; color: white; width: 60px;">
+                    <div class="action-toggle" data-toggle="liked" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <i class="fa-${globalState.toggles.liked ? 'solid' : 'regular'} fa-thumbs-up" style="font-size: 26px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span class="editable" data-field="likes" style="font-size: 12px; font-weight: 500;">${globalState.text.likes}</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <i class="fa-regular fa-thumbs-down" style="font-size: 26px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span style="font-size: 12px; font-weight: 500;">Dislike</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <i class="fa-solid fa-message" style="font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span class="editable" data-field="comments" style="font-size: 12px; font-weight: 500;">${globalState.text.comments}</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <i class="fa-solid fa-share" style="font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); transform: scaleX(-1);"></i>
+                        <span style="font-size: 12px; font-weight: 500;">Share</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <i class="fa-solid fa-arrows-rotate" style="font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span style="font-size: 12px; font-weight: 500;">Remix</span>
+                    </div>
+
+                    <div style="width: 38px; height: 38px; border-radius: 8px; overflow: hidden; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.5); background: #000;">
+                        ${getAvatar(globalState.images.profile, "100%")}
+                    </div>
+                </div>
+
+                <div style="position: absolute; bottom: 80px; left: 12px; right: 75px; z-index: 10; color: white;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden;">
+                            ${getAvatar(globalState.images.profile, "36px")}
+                        </div>
+                        <span class="editable" data-field="username" style="font-weight: 500; font-size: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">@${globalState.text.username}</span>
+                        
+                        <button class="action-toggle" data-toggle="isFollowing" style="background: ${globalState.toggles.isFollowing ? 'rgba(255,255,255,0.2)' : 'white'}; color: ${globalState.toggles.isFollowing ? 'white' : 'black'}; border: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                            ${globalState.toggles.isFollowing ? 'Subscribed' : 'Subscribe'}
+                        </button>
+                    </div>
+
+                    <div class="editable" data-field="caption" style="font-size: 14px; line-height: 1.4; margin-bottom: 12px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                        ${globalState.text.caption}
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
+                        <i class="fa-solid fa-music" style="font-size: 11px;"></i>
+                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.9;">
+                            Original sound - <span class="editable" data-field="username">${globalState.text.username}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 65px; background: black; display: flex; justify-content: space-between; align-items: center; z-index: 10; color: white; font-size: 10px; border-top: 1px solid #222; padding-bottom: 4px;">
+                    
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.7; min-width: 0;">
+                        <i class="fa-solid fa-house" style="font-size: 20px;"></i>
+                        <span style="white-space: nowrap;">Home</span>
+                    </div>
+
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0;">
+                        <i class="fa-solid fa-bolt" style="font-size: 20px;"></i>
+                        <span style="font-weight: 700; white-space: nowrap;">Shorts</span>
+                    </div>
+                    
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0;">
+                        <i class="fa-solid fa-circle-plus" style="font-size: 38px; line-height: 1;"></i>
+                    </div>
+                    
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.7; min-width: 0;">
+                        <i class="fa-brands fa-youtube" style="font-size: 20px;"></i>
+                        <span style="white-space: nowrap;">Subscriptions</span>
+                    </div>
+
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.7; min-width: 0;">
+                        <div style="width: 22px; height: 22px; border-radius: 50%; overflow: hidden; background: #333;">
+                            ${getAvatar("", "22px")}
+                        </div>
+                        <span style="white-space: nowrap;">You</span>
+                    </div>
+                </div>
+            `,
+            
+            snapchat: () => `
+                <div class="post-image-bg" style="background-image: url('${globalState.images.post}')"></div>
+                <div class="sc-overlay" style="background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.3) 100%);"></div>
+                
+                <div style="position: absolute; top: 0; left: 0; right: 0; padding: 20px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                    <i class="fa-solid fa-chevron-left" style="font-size: 22px;"></i>
+                    <span style="font-weight: 700; font-size: 19px; letter-spacing: 0.5px;">Spotlight</span>
+                    <i class="fa-solid fa-ellipsis-vertical" style="font-size: 22px;"></i>
+                </div>
+
+                <div style="position: absolute; right: 10px; bottom: 110px; display: flex; flex-direction: column; align-items: center; gap: 22px; z-index: 10; color: white; width: 55px;">
+                    <div class="action-toggle" data-toggle="isFollowing" style="position: relative; margin-bottom: 8px;">
+                        <div style="width: 46px; height: 46px; border: 2px solid white; border-radius: 50%; overflow: hidden; background: #222;">
+                            ${getAvatar(globalState.images.profile, "46px")}
+                        </div>
+                        <div style="display: ${globalState.toggles.isFollowing ? 'none' : 'flex'}; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); background: #00baff; color: white; border-radius: 50%; width: 20px; height: 20px; align-items: center; justify-content: center; font-size: 10px; border: 2px solid black;">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="action-toggle" data-toggle="liked" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-heart" style="font-size: 34px; color: ${globalState.toggles.liked ? '#ff0045' : 'white'}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span class="editable" data-field="likes" style="font-size: 13px; font-weight: 700;">${globalState.text.likes}</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                        <i class="fa-solid fa-arrows-rotate" style="font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                        <span style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Remix</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                        <div style="width: 44px; height: 44px; background: #fffc00; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                            <i class="fa-solid fa-paper-plane" style="margin-left: -2px;"></i>
+                        </div>
+                        <span style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Send</span>
+                    </div>
+                </div>
+
+                <div style="position: absolute; bottom: 100px; left: 14px; right: 80px; z-index: 10; color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <span class="editable" data-field="username" style="font-weight: 700; font-size: 17px; letter-spacing: 0.2px;">${globalState.text.username}</span>
+                    </div>
+                    <div class="editable" data-field="caption" style="font-size: 14px; line-height: 1.35; margin-bottom: 12px; max-height: 3.9em; overflow: hidden;">
+                        ${globalState.text.caption}
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; opacity: 0.95;">
+                        <i class="fa-solid fa-music" style="font-size: 11px;"></i>
+                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            Original Sound - <span class="editable" data-field="username">${globalState.text.username}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 75px; background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4)); backdrop-filter: blur(5px); display: flex; justify-content: space-around; align-items: center; z-index: 15; color: white; padding-bottom: 15px;">
+                    <i class="fa-solid fa-location-dot" style="font-size: 24px; opacity: 0.8;"></i>
+                    <i class="fa-solid fa-message" style="font-size: 24px; opacity: 0.8;"></i>
+                    
+                    <div style="width: 54px; height: 54px; border: 4px solid white; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin-top: -5px;">
+                        <div style="width: 40px; height: 40px; border: 2px solid white; border-radius: 14px;"></div>
+                    </div>
+                    
+                    <i class="fa-solid fa-user-group" style="font-size: 24px; opacity: 0.8;"></i>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; color: #fffc00;">
+                        <i class="fa-solid fa-play" style="font-size: 24px;"></i>
+                        <div style="width: 4px; height: 4px; background: #fffc00; border-radius: 50%;"></div>
+                    </div>
+                </div>
+            `
+        };
+
+        // --- CORE RENDER FUNCTION ---
+        function render() {
+            // If no post image is selected, make the container transparent
+            if (!globalState.images.post) {
+                captureArea.style.backgroundColor = 'transparent';
+            } else {
+                // Revert to theme color if an image is present
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                captureArea.style.backgroundColor = isDark ? '#000000' : '#ffffff';
+            }
+
+            captureArea.innerHTML = templates[globalState.platform]();
+
+            document.querySelectorAll('.editable').forEach(el => {
+                el.ondblclick = function() { 
+                    this.contentEditable = true; 
+                    this.focus(); 
+                };
+                el.onblur = function() { 
+                    this.contentEditable = false; 
+                    const field = this.getAttribute('data-field');
+                    if (field) {
+                        globalState.text[field] = this.innerText;
+                        document.querySelectorAll(`.editable[data-field="${field}"]`).forEach(node => node.innerText = this.innerText);
+                    }
+                };
+                el.onkeydown = function(e) { if(e.key === 'Enter') { e.preventDefault(); this.blur(); } };
+            });
+
+            document.querySelectorAll('.action-toggle').forEach(el => {
+                el.onclick = function() {
+                    const toggleKey = this.getAttribute('data-toggle');
+                    if (toggleKey) {
+                        globalState.toggles[toggleKey] = !globalState.toggles[toggleKey];
+                        render();
+                    }
+                };
+            });
+        }
+
+        // --- PLATFORM SWITCHER ---
+        const btnSite = document.getElementById('btn-site');
+        const platformNames = { 
+            instagram: 'Instagram', 
+            ig_reels: 'IG Reels', 
+            tiktok: 'TikTok', 
+            twitter: 'X', 
+            youtube: 'YouTube', 
+            yt_shorts: 'YT Shorts', // NEW
+            snapchat: 'Snapchat' 
+        };
+        
+        function setPlatform(platform) {
+            globalState.platform = platform;
+            btnSite.innerText = `🌐 ${platformNames[platform]}`;
+            closeAllMenus();
+            render();
+        }
+
+        // --- MENU LOGIC ---
+        function toggleMenu(id, e) {
+            e.stopPropagation();
+            closeAllMenus();
+            document.getElementById(id).classList.toggle('show');
+        }
+        function closeAllMenus() {
+            document.querySelectorAll('.menu').forEach(m => m.classList.remove('show'));
+        }
+        window.onclick = closeAllMenus;
+
+        // --- IMAGE HANDLING ---
+        const profileBtn = document.getElementById('btn-profile');
+        const profileInput = document.getElementById('input-profile');
+        const postBtn = document.getElementById('btn-post');
+        const postInput = document.getElementById('input-post');
+
+        profileBtn.onclick = () => { 
+            if (!globalState.images.profile) {
+                profileInput.click(); 
+            } else {
+                clearProfile();
+            }
+        };
+        profileInput.onchange = function() {
+            if (this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    globalState.images.profile = e.target.result;
+                    // Change to "Clear" state: Red button with "User Minus" icon
+                    profileBtn.innerHTML = '<i class="fa-solid fa-user-minus"></i>'; 
+                    profileBtn.classList.replace('primary', 'danger');
+                    render();
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        };
+        function clearProfile() {
+            globalState.images.profile = ''; 
+            profileInput.value = '';
+            // Revert to "Add" state: Blue button with "User Plus" icon
+            profileBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i>'; 
+            profileBtn.classList.replace('danger', 'primary');
+            render();
+        }
+
+        postBtn.onclick = () => { 
+            if (!globalState.images.post) {
+                postInput.click(); 
+            } else {
+                clearPost();
+            }
+        };
+        postInput.onchange = function() {
+            if (this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    globalState.images.post = e.target.result;
+                    // Change to "Clear" state: Red button with "Image Slash" icon
+                    postBtn.innerHTML = '<i class="fa-solid fa-rectangle-xmark"></i>'; 
+                    postBtn.classList.replace('secondary', 'danger');
+                    render();
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        };
+        function clearPost() {
+            globalState.images.post = ''; 
+            postInput.value = '';
+            // Revert to "Add" state: Gray button with "Image Portrait" icon
+            postBtn.innerHTML = '<i class="fa-solid fa-images"></i>'; 
+            postBtn.classList.replace('danger', 'secondary');
+            render();
+        }
+
+        // --- UTILS (Ratio, Theme, Export) ---
+        function setRatio(val) {
+            globalState.ratio = val;
+            document.getElementById('btn-ratio').innerText = `${val}`;
+            closeAllMenus();
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+        }
+
+        function handleExport(targetHeight) {
+            const isLandscape = globalState.ratio === '16:9';
+            
+            // 1. Calculate Target Dimensions
+            // If Landscape 1080p: Width 1920, Height 1080
+            // If Portrait 1080p:  Width 1080, Height 1920
+            let finalWidth, finalHeight;
+            if (isLandscape) {
+                finalHeight = targetHeight;
+                finalWidth = Math.round((16 / 9) * targetHeight);
+            } else {
+                // For 9:16, targetHeight from the menu (e.g. 1080) is actually the width.
+                // We flip it to ensure we get a vertical 1080x1920 image.
+                finalWidth = targetHeight; 
+                finalHeight = Math.round((16 / 9) * targetHeight);
+            }
+
+            // 2. Calculate scale based on the vertical height of the mockup (640px)
+            const scale = finalHeight / captureArea.offsetHeight;
+
+            html2canvas(captureArea, {
+                scale: scale,
+                backgroundColor: null,
+                useCORS: true,
+                logging: false
+            }).then(sourceCanvas => {
+                const outputCanvas = document.createElement('canvas');
+                const ctx = outputCanvas.getContext('2d');
+                outputCanvas.width = finalWidth;
+                outputCanvas.height = finalHeight;
+
+                if (isLandscape) {
+                    // --- 16:9 LANDSCAPE LOGIC (Centering with Bars) ---
+                    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                    ctx.fillStyle = isDark ? "#000000" : "#ffffff";
+                    
+                    const xOffset = (finalWidth - sourceCanvas.width) / 2;
+                    const barWidth = Math.ceil(xOffset);
+                    
+                    // Draw only side bars to keep center transparent if needed
+                    ctx.fillRect(0, 0, barWidth, finalHeight);
+                    ctx.fillRect(finalWidth - barWidth, 0, barWidth, finalHeight);
+                    
+                    ctx.drawImage(sourceCanvas, xOffset, 0);
+                    downloadCanvas(outputCanvas, 'landscape');
+                } else {
+                    // --- 9:16 PORTRAIT LOGIC (Standard Vertical) ---
+                    // Because we used the correct scale, sourceCanvas is already 1080x1920
+                    ctx.drawImage(sourceCanvas, 0, 0);
+                    downloadCanvas(outputCanvas, 'portrait');
+                }
+            });
+}
+
+        function downloadCanvas(canvas, suffix) {
+            const link = document.createElement('a');
+            link.download = `${globalState.platform}-${suffix}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        }
+
+        // --- INITIALIZE ---
+        render();
+    </script>
+</body>
+</html>
