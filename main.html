@@ -15,11 +15,12 @@
             --bg-card: #ffffff;
             --text-main: #0f1419;
             --text-muted: #536471;
-            --border: #eff3f4;
+            /* Darkened slightly for light mode so borders don't vanish into the background */
+            --border: #cfd9de; 
             --accent-red: #f91880;
             --accent-blue: #1d9bf0;
             --accent-green: #00ba7c;
-            --overlay-shadow: rgba(0,0,0,0.5);
+            --overlay-shadow: 0 1px 3px rgba(255, 255, 255, 0.8); /* White glow for dark text legibility */
             /* YouTube Specific Light */
             --yt-btn-bg: #f2f2f2;
             --yt-btn-text: #0f0f0f;
@@ -31,6 +32,7 @@
             --text-main: #e7e9ea;
             --text-muted: #71767b;
             --border: #2f3336;
+            --overlay-shadow: 0 1px 3px rgba(0,0,0,0.6);
             /* YouTube Specific Dark */
             --yt-btn-bg: #272727;
             --yt-btn-text: #f1f1f1;
@@ -73,16 +75,15 @@
             flex-direction: column;
             justify-content: space-between;
             padding: 12px;
-            color: white;
+            color: var(--text-main);
             z-index: 10;
             pointer-events: none;
             box-sizing: border-box;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+            text-shadow: var(--overlay-shadow);
         }
 
         .v-overlay * { pointer-events: auto; }
 
-        /* Side Column - MODIFIED: Lowered to 60px */
         .v-side-actions {
             position: absolute;
             right: 8px;
@@ -93,27 +94,6 @@
             gap: 16px;
         }
 
-        .v-avatar-plus {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            border: 2px solid white;
-            position: relative;
-            margin-bottom: 8px;
-        }
-
-        .v-avatar-plus::after {
-            content: '+';
-            position: absolute;
-            bottom: -6px; left: 50%;
-            transform: translateX(-50%);
-            background: #ff3b5c;
-            color: white;
-            width: 16px; height: 16px;
-            border-radius: 50%;
-            font-size: 12px;
-            display: flex; align-items: center; justify-content: center;
-        }
-
         .v-action-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
         .v-action-item i { font-size: 24px; }
         .v-action-item span { font-size: 11px; font-weight: 600; margin-top: 2px;}
@@ -121,51 +101,72 @@
         /* Bottom Content */
         .v-bottom-info { margin-bottom: 8px; max-width: 80%; }
         
-        /* MODIFIED: Flex alignment to keep @ and editable text aligned */
         .v-username { 
             font-weight: 700; 
             font-size: 14px; 
             margin-bottom: 6px; 
-            display: block; /* Standard block flow, NOT flex */
-            white-space: nowrap; /* Prevents the @ and name from ever splitting onto two lines */
+            display: block;
+            white-space: nowrap; 
         }
         
         .v-caption { font-size: 13px; line-height: 1.4; margin-bottom: 8px; }
         .v-music { font-size: 12px; display: flex; align-items: center; gap: 6px; }
 
-        /* Custom TikTok Plus Button - MODIFIED: Fixed border-radius typo */
         .tt-plus-btn {
-            width: 30px; 
+            width: 31px; 
             height: 20px;
-            flex: 0 0 30px; /* Stays exactly 30px, NO stretching */
-            background: white;
-            border-radius: 6px;
             position: relative;
             display: flex; 
             align-items: center; 
             justify-content: center;
         }
+
+        /* The Cyan glitch layer stays consistent */
         .tt-plus-btn::before {
-            content: ''; position: absolute; inset: 0;
-            background: #20d5ea; border-radius: 6px;
-            transform: translateX(-3px); z-index: -1;
-        }
-        .tt-plus-btn::after {
-            content: ''; position: absolute; inset: 0;
-            background: #ff3b5c; border-radius: 6px;
-            transform: translateX(3px); z-index: -1;
+            content: ''; 
+            position: absolute; 
+            inset: 0;
+            background: #25F4EE; 
+            border-radius: 7px;
+            transform: translateX(-3px); 
+            z-index: 1;
         }
 
-        /* --- Editable Fields - MODIFIED: Padding fix for static @ --- */
+        /* The Magenta glitch layer stays consistent */
+        .tt-plus-btn::after {
+            content: ''; 
+            position: absolute; 
+            inset: 0;
+            background: #FE2C55; 
+            border-radius: 7px;
+            transform: translateX(3px); 
+            z-index: 1;
+        }
+
+        /* The Main Button Body - Colors now inverted */
+        .tt-plus-main {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: var(--text-main); /* Now dark in light mode, white in dark mode */
+            color: var(--bg-card);        /* Now white in light mode, dark in dark mode */
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            z-index: 2;
+        }
+
+        /* --- Editable Fields --- */
         .editable { cursor: text; border-radius: 3px; outline: none; }
         .editable:hover { background: rgba(29, 155, 240, 0.1); box-shadow: 0 0 0 2px rgba(29,155,240,0.5); }
         .v-username .editable {
             display: inline; 
             border-radius: 3px;
             outline: none;
-            /* We remove margins/paddings that might push the baseline down */
             padding: 0; 
-            margin-left: 1px; /* Tiny native space between @ and the name */
+            margin-left: 1px; 
         }
         
         .action-toggle { cursor: pointer; transition: transform 0.1s; }
@@ -236,34 +237,32 @@
             color: var(--text-main);
             font-size: 20px; 
         }
-        .yt-share-btn:hover {
-            opacity: 0.7;
-        }
-
-        /* Ensure the arrow is pointing the right way (flipped fa-reply look) */
-        .yt-share-btn i {
-            transform: scaleX(1); /* Adjust if your icon set faces left by default */
-        }
+        .yt-share-btn:hover { opacity: 0.7; }
+        .yt-share-btn i { transform: scaleX(1); }
 
         /* Manual YouTube Shorts Plus Button */
         .shorts-plus-manual {
-            width: 32px; 
-            height: 32px; 
-            flex: 0 0 32px; /* Stays exactly 32px, NO stretching */
-            border: 2px solid white;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            /* Uses text color for the circle body */
+            background: var(--text-main); 
+            /* Uses card background color for the icon */
+            color: var(--bg-card);
             font-size: 16px;
-            margin: 0 auto; /* Keeps it centered in its flex slot */
+            /* Optional: Adds a very subtle outline to define the shape against the video */
+            border: 1px solid rgba(128, 128, 128, 0.2);
+            cursor: pointer;
         }
 
         .shorts-sub-pill {
-            background: #FF0000; /* Precise YouTube Red */
+            background: #FF0000; 
             color: #FFFFFF;
             border: none;
-            border-radius: 40px; /* Perfect pill shape */
+            border-radius: 40px; 
             padding: 7px 15px;
             font-size: 12px;
             font-weight: 700;
@@ -272,17 +271,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-shadow: none;
         }
 
-        /* State when Subscribed */
         .shorts-sub-pill.is-active {
-            background: rgba(255, 255, 255, 0.2); /* Muted grey/translucent */
-            color: #f1f1f1;
+            background: var(--border); 
+            color: var(--text-main);
         }
 
         .yt-sub-btn.subscribed {
-            background: rgba(255, 255, 255, 0.2);
-            color: #f1f1f1;
+            background: var(--border);
+            color: var(--text-main);
         }
 
         /* 5. Snapchat */
@@ -304,18 +303,22 @@
         .menu button { display: block; width: 100%; padding: 12px; border: none; background: none; text-align: left; cursor: pointer; color: var(--text-main); font-weight: 500; transition: background 0.1s;}
         .menu button:hover { background: rgba(128,128,128,0.1); }
 
-        /* --- MODIFIED: Grounded Nav Bar --- */
+        /* --- Adaptive Grounded Nav Bar --- */
         .v-nav {
             display: flex; 
-            justify-content: space-between; /* Creates even spacing */
+            justify-content: space-between; 
             align-items: center; 
-            padding: 6px 10px 2px 10px; /* Grounded to bottom */
-            border-top: 0.5px solid rgba(255,255,255,0.15);
+            margin: 0 -12px -12px -12px; /* Pulls nav out of overlay padding */
+            padding: 10px 12px;
+            border-top: 1px solid var(--border);
+            background-color: var(--bg-card); /* Adapts to solid background */
+            color: var(--text-main);
+            text-shadow: none; /* Disables shadow in standard UI elements */
             height: auto; 
             box-sizing: border-box;
+            z-index: 20;
         }
 
-        /* Forces all nav items to take equal width to center the middle button perfectly */
         .v-nav .v-action-item,
         .v-nav > div {
             flex: 1;
@@ -391,14 +394,10 @@
     </div>
 
     <script>
-        // --- UNIVERSAL DATA STRUCTURE ---
         const globalState = {
             platform: 'instagram',
             ratio: '9:16',
-            images: {
-                profile: '', 
-                post: ''     
-            },
+            images: { profile: '', post: '' },
             text: {
                 username: 'user_name',
                 handle: 'user_handle',
@@ -421,7 +420,6 @@
 
         const captureArea = document.getElementById('capture-area');
 
-        // --- AVATAR HELPER ---
         const getAvatar = (src, size = "100%", isCircular = true) => {
             const borderRadius = isCircular ? "50%" : "8px";
             if (src && src.trim() !== "") {
@@ -433,7 +431,6 @@
                 </div>`;
         };
 
-        // --- TEMPLATE ENGINE ---
         const templates = {
             instagram: () => `
                 <div class="ig-header">
@@ -476,7 +473,7 @@
                     </div>
 
                     <div class="v-side-actions">
-                        <div class="v-action-item action-toggle" data-toggle="liked" style="color: ${globalState.toggles.liked ? '#ff3040' : 'white'}">
+                        <div class="v-action-item action-toggle" data-toggle="liked" style="color: ${globalState.toggles.liked ? '#ff3040' : 'var(--text-main)'}">
                             <i class="fa-${globalState.toggles.liked ? 'solid' : 'regular'} fa-heart"></i>
                             <span class="editable" data-field="likes">${globalState.text.likes}</span>
                         </div>
@@ -490,7 +487,7 @@
                         <div class="v-action-item">
                             <i class="fa-solid fa-ellipsis"></i>
                         </div>
-                        <div style="width:28px; height:28px; border-radius:6px; border: 2px solid white; overflow:hidden; margin-top:5px;">
+                        <div style="width:28px; height:28px; border-radius:6px; border: 2px solid var(--text-main); overflow:hidden; margin-top:5px;">
                             ${getAvatar(globalState.images.profile, "100%")}
                         </div>
                     </div>
@@ -500,7 +497,7 @@
                             <div style="display:flex; align-items:center; margin-bottom:8px;">
                                 ${getAvatar(globalState.images.profile, "28px")}
                                 <span class="v-username editable" data-field="username" style="margin-left:8px; margin-bottom:0;">${globalState.text.username}</span>
-                                <button class="action-toggle" data-toggle="isFollowing" style="background:transparent; color:white; border:1px solid white; border-radius:8px; padding:3px 10px; font-size:11px; font-weight:600; margin-left:10px;">
+                                <button class="action-toggle" data-toggle="isFollowing" style="background:transparent; color:var(--text-main); border:1px solid var(--text-main); border-radius:8px; padding:3px 10px; font-size:11px; font-weight:600; margin-left:10px;">
                                     ${globalState.toggles.isFollowing ? 'Following' : 'Follow'}
                                 </button>
                             </div>
@@ -511,13 +508,13 @@
                             </div>
                         </div>
                         
-                        <div class="v-nav" style="border-top: 1px solid rgba(255,255,255,0.2); padding-top:10px;">
+                        <div class="v-nav">
                             <div class="v-action-item"><i class="fa-solid fa-house"></i></div>
                             <div class="v-action-item"><i class="fa-solid fa-magnifying-glass"></i></div>
                             <div class="v-action-item"><i class="fa-regular fa-square-plus"></i></div>
                             <div class="v-action-item"><i class="fa-solid fa-clapperboard"></i></div>
                             <div>
-                            <div style="width:24px; height:24px; border-radius:50%; overflow:hidden; border:1px solid white;">
+                            <div style="width:24px; height:24px; border-radius:50%; overflow:hidden; border:1px solid var(--text-main);">
                                 ${getAvatar("", "100%")}
                             </div>
                             </div>
@@ -532,12 +529,21 @@
                 <div class="v-overlay">
                     <div style="display:flex; justify-content:center; gap:20px; font-size:14px; font-weight:700; padding-top:10px; opacity:0.8;">
                         <span style="opacity:0.6;">Following</span>
-                        <span style="border-bottom: 2px solid white; padding-bottom:4px;">For You</span>
+                        <span style="border-bottom: 2px solid var(--text-main); padding-bottom:4px;">For You</span>
                     </div>
 
                     <div class="v-side-actions">
-                        <div class="v-avatar-plus">${getAvatar(globalState.images.profile, "100%")}</div>
-                        <div class="v-action-item action-toggle" data-toggle="liked" style="color: ${globalState.toggles.liked ? '#ff3b5c' : 'white'}">
+                        <div class="action-toggle" data-toggle="isFollowing" style="position: relative; margin-bottom: 8px; cursor: pointer;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--text-main); overflow: hidden; background: var(--bg-card);">
+                                ${getAvatar(globalState.images.profile, "100%")}
+                            </div>
+                            ${!globalState.toggles.isFollowing ? `
+                                <div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); background: #ff3b5c; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-shadow: none; z-index: 2;">
+                                    <i class="fa-solid fa-plus" style="font-size: 11px;"></i>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="v-action-item action-toggle" data-toggle="liked" style="color: ${globalState.toggles.liked ? '#ff3b5c' : 'var(--text-main)'}">
                             <i class="fa-solid fa-heart"></i>
                             <span class="editable" data-field="likes">${globalState.text.likes}</span>
                         </div>
@@ -545,7 +551,7 @@
                             <i class="fa-solid fa-comment-dots"></i>
                             <span class="editable" data-field="comments">${globalState.text.comments}</span>
                         </div>
-                        <div class="v-action-item action-toggle" data-toggle="bookmarked" style="color: ${globalState.toggles.bookmarked ? '#face15' : 'white'}">
+                        <div class="v-action-item action-toggle" data-toggle="bookmarked" style="color: ${globalState.toggles.bookmarked ? '#face15' : 'var(--text-main)'}">
                             <i class="fa-solid fa-bookmark"></i>
                             <span class="editable" data-field="bookmarks">${globalState.text.bookmarks}</span>
                         </div>
@@ -553,9 +559,7 @@
                             <i class="fa-solid fa-share"></i>
                             <span class="editable" data-field="shares">${globalState.text.shares}</span>
                         </div>
-                        <div style="width:34px; height:34px; background: #333; border-radius:50%; border: 8px solid #111; margin-top:10px; display:flex; align-items:center; justify-content:center;">
-                            <div style="width:10px; height:10px; background:#555; border-radius:50%;"></div>
-                        </div>
+                        <div style="width: 40px; height: 40px; background: #111; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 10px solid #222; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>
                     </div>
 
                     <div class="v-bottom-section">
@@ -566,18 +570,6 @@
                                 <span class="v-username" style="margin-left:8px;">
                                     @<span class="editable" data-field="username">${globalState.text.username}</span>
                                 </span>
-
-                                ${globalState.platform === 'shorts' ? `
-                                    <button class="shorts-sub-pill ${globalState.toggles.isFollowing ? 'is-active' : ''}" data-toggle="isFollowing" style="padding: 4px 10px; font-size: 10px; height: 24px;">
-                                        ${globalState.toggles.isFollowing ? 'Subscribed' : 'Subscribe'}
-                                    </button>
-                                ` : ''}
-
-                                ${globalState.platform === 'tiktok' ? `
-                                    <div class="tk-follow-btn" style="margin-left: 10px;">
-                                        <span class="editable" data-field="followText">${globalState.text.followText || 'Follow'}</span>
-                                    </div>
-                                ` : ''}
                             </div>
                             
                             <div class="v-caption editable" data-field="caption">${globalState.text.caption}</div>
@@ -592,7 +584,11 @@
                             <div class="v-action-item"><i class="fa-solid fa-house"></i><span>Home</span></div>
                             <div class="v-action-item"><i class="fa-solid fa-user-group"></i><span>Friends</span></div>
                             <div>
-                                <div class="tt-plus-btn"><i class="fa-solid fa-plus"></i></div>
+                                <div class="tt-plus-btn">
+                                    <div class="tt-plus-main">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </div>
+                                </div>
                             </div>
                             <div class="v-action-item"><i class="fa-solid fa-message"></i><span>Inbox</span></div>
                             <div class="v-action-item"><i class="fa-solid fa-user"></i><span>Profile</span></div>
@@ -696,7 +692,7 @@
                     </div>
 
                     <div class="v-side-actions">
-                        <div class="v-action-item action-toggle" data-toggle="liked" style="color: ${globalState.toggles.liked ? '#3ea6ff' : 'white'}">
+                        <div class="v-action-item action-toggle" data-toggle="liked" style="color: ${globalState.toggles.liked ? '#3ea6ff' : 'var(--text-main)'}">
                             <i class="fa-regular fa-thumbs-up"></i>
                             <span class="editable" data-field="likes">${globalState.text.likes}</span>
                         </div>
@@ -716,7 +712,7 @@
                             <i class="fa-solid fa-arrows-rotate"></i>
                             <span>Remix</span>
                         </div>
-                        <div style="width:32px; height:32px; border-radius:6px; border: 2px solid white; overflow:hidden; margin-top:5px;">
+                        <div style="width:32px; height:32px; border-radius:6px; border: 2px solid var(--text-main); overflow:hidden; margin-top:5px;">
                             ${getAvatar(globalState.images.profile, "100%")}
                         </div>
                     </div>
@@ -741,7 +737,7 @@
                             </div>
                         </div>
                         
-                        <div class="v-nav" style="padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.15);">
+                        <div class="v-nav">
                             <div class="v-action-item"><i class="fa-solid fa-house"></i><span style="font-size: 9px; margin-top:4px;">Home</span></div>
                             <div class="v-action-item"><i class="fa-solid fa-bolt"></i><span style="font-size: 9px; margin-top:4px;">Shorts</span></div>
                             
@@ -752,7 +748,7 @@
                             <div class="v-action-item"><i class="fa-brands fa-youtube"></i><span style="font-size: 9px; margin-top:4px;">Subscriptions</span></div>
                             
                             <div class="v-action-item">
-                                <div style="width:22px; height:22px; border-radius:50%; overflow:hidden; border:1.5px solid white;">
+                                <div style="width:22px; height:22px; border-radius:50%; overflow:hidden; border:1.5px solid var(--text-main);">
                                     ${getAvatar("", "100%")}
                                 </div>
                                 <span style="font-size: 9px; margin-top:4px;">You</span>
@@ -770,7 +766,7 @@
                         <div style="width:34px; height:34px; background:rgba(0,0,0,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
                             <i class="fa-solid fa-chevron-left" style="font-size:16px;"></i>
                         </div>
-                        <div style="display:flex; gap:18px; font-size:20px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                        <div style="display:flex; gap:18px; font-size:20px;">
                             <i class="fa-solid fa-magnifying-glass"></i>
                             <i class="fa-solid fa-user-plus"></i>
                             <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -778,11 +774,18 @@
                     </div>
 
                     <div class="v-side-actions" style="bottom: 120px; gap: 18px;">
-                        <div style="width: 34px; height: 34px; border: 2px solid white; border-radius: 50%; overflow: hidden; margin-bottom: 5px;">
-                            ${getAvatar(globalState.images.profile, "100%")}
+                        <div class="action-toggle" data-toggle="isFollowing" style="position: relative; margin-bottom: 5px; cursor: pointer;">
+                            <div style="width: 34px; height: 34px; border: 2px solid var(--text-main); border-radius: 50%; overflow: hidden; background: var(--bg-card);">
+                                ${getAvatar(globalState.images.profile, "100%")}
+                            </div>
+                            ${!globalState.toggles.isFollowing ? `
+                                <div style="position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--bg-card); width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-shadow: none; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">
+                                    <i class="fa-solid fa-plus" style="font-size: 9px;"></i>
+                                </div>
+                            ` : ''}
                         </div>
 
-                        <div class="v-action-item action-toggle" data-toggle="liked" style="color: ${globalState.toggles.liked ? '#ff2b42' : 'white'}">
+                        <div class="v-action-item action-toggle" data-toggle="liked" style="color: ${globalState.toggles.liked ? '#ff2b42' : 'var(--text-main)'}">
                             <i class="fa-solid fa-heart"></i>
                             <span class="editable" data-field="likes">${globalState.text.likes}</span>
                         </div>
@@ -803,7 +806,7 @@
                     </div>
 
                     <div class="v-bottom-section">
-                        <div class="v-bottom-info" style="margin-bottom: 15px; text-shadow: 0 1px 8px rgba(0,0,0,1);">
+                        <div class="v-bottom-info" style="margin-bottom: 15px;">
                             <span class="v-username editable" data-field="username" style="font-size:15px; font-weight: 700;">${globalState.text.username}</span>
                             <div class="v-caption editable" data-field="caption" style="font-size:12px; margin-top: 2px; opacity:0.9;">${globalState.text.caption}</div>
                             <div class="v-music" style="background:transparent; padding:0; margin-top:6px; opacity: 0.8;">
@@ -812,36 +815,36 @@
                             </div>
                         </div>
                         
-                        <div class="v-nav" style="border:none; padding-bottom:10px; font-size: 22px;">
+                        <div class="v-nav" style="font-size: 22px;">
                             <div class="v-action-item"><i class="fa-solid fa-location-dot"></i></div>
                             <div class="v-action-item"><i class="fa-solid fa-message"></i></div>
                             <div>
-                            <div style="width:48px; height:48px; border:4px solid white; border-radius:50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>
+                            <div style="width:48px; height:48px; border:4px solid var(--text-main); border-radius:50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>
                             </div>
                             <div class="v-action-item"><i class="fa-solid fa-user-group"></i></div>
-                            <div class="v-action-item" style="color: #fffc00;"><i class="fa-solid fa-play"></i></div>
+                            <div class="v-action-item">
+                                <div style="width: 34px; height: 34px; background: rgba(128, 128, 128, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fffc00; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+                                    <i class="fa-solid fa-play" style="font-size: 15px; margin-left: 2px;"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 `
         };
 
-        // --- CORE RENDER FUNCTION ---
         function render() {
             const isLandscapeRatio = globalState.ratio === '16:9';
             const hasLandscapeLayout = [].includes(globalState.platform);
 
-            // 1. Control the container dimensions strictly by aspect ratio + platform support
             if (isLandscapeRatio && hasLandscapeLayout) {
                 captureArea.style.width = '640px';
                 captureArea.style.height = '360px';
             } else {
-                // Keeps TikTok/IG as mobile portrait, and forces TW/YT to portrait if 9:16 is selected
                 captureArea.style.width = '360px';
                 captureArea.style.height = '640px';
             }
 
-            // Handle background transparency
             const hasImage = !!globalState.images.post;
             if (!hasImage) {
                 captureArea.style.backgroundColor = 'transparent';
@@ -850,10 +853,8 @@
                 captureArea.style.backgroundColor = isDark ? '#000000' : '#ffffff';
             }
 
-            // Render the dynamic template
             captureArea.innerHTML = templates[globalState.platform]();
 
-            // Force specific cards transparent if no image is loaded
             if (!hasImage) {
                 const nestedCard = captureArea.querySelector('.tw-card, .yt-card');
                 if (nestedCard) {
@@ -888,7 +889,6 @@
             });
         }
 
-        // --- PLATFORM SWITCHER ---
         const btnSite = document.getElementById('btn-site');
         const platformNames = { 
             instagram: 'Instagram', 
@@ -907,7 +907,6 @@
             render();
         }
 
-        // --- MENU LOGIC ---
         function toggleMenu(id, e) {
             e.stopPropagation();
             closeAllMenus();
@@ -918,7 +917,6 @@
         }
         window.onclick = closeAllMenus;
 
-        // --- IMAGE HANDLING ---
         const profileBtn = document.getElementById('btn-profile');
         const profileInput = document.getElementById('input-profile');
         const postBtn = document.getElementById('btn-post');
@@ -978,14 +976,12 @@
             render();
         }
 
-        // --- UTILS (Ratio, Theme, Export) ---
         function setRatio(val) {
             globalState.ratio = val;
             document.getElementById('btn-ratio').innerText = `${val}`;
             closeAllMenus();
         }
 
-        // --- UTILS (Theme, Export) ---
         function toggleTheme() {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
@@ -1053,7 +1049,6 @@
                     outputCanvas.width = finalWidth;
                     outputCanvas.height = finalHeight;
                     
-                    // Auto-calculates pillarbox width (0 for TW/YT landscape, >0 for IG/TikTok portrait)
                     const xOffset = (finalWidth - sourceCanvas.width) / 2;
 
                     ctx.fillStyle = bgColor;
@@ -1070,7 +1065,6 @@
                     ctx.drawImage(sourceCanvas, xOffset, 0);
                     downloadCanvas(outputCanvas, 'landscape');
                 } else {
-                    // 9:16 Portrait Logic (Rotated 90° Clockwise for export)
                     outputCanvas.width = finalHeight; 
                     outputCanvas.height = finalWidth;
                     
@@ -1094,7 +1088,6 @@
             link.click();
         }
 
-        // --- INITIALIZE ---
         render();
     </script>
 </body>
