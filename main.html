@@ -67,7 +67,7 @@
             background-color: transparent; 
         }
 
-        /* --- Final Vertical UI Engine --- */
+        /* --- Vertical UI --- */
         .v-overlay {
             position: absolute;
             inset: 0;
@@ -100,7 +100,6 @@
 
         /* Bottom Content */
         .v-bottom-info { margin-bottom: 8px; max-width: 80%; }
-        
         .v-username { 
             font-weight: 700; 
             font-size: 14px; 
@@ -108,55 +107,8 @@
             display: block;
             white-space: nowrap; 
         }
-        
         .v-caption { font-size: 13px; line-height: 1.4; margin-bottom: 8px; }
         .v-music { font-size: 12px; display: flex; align-items: center; gap: 6px; }
-
-        .tt-plus-btn {
-            width: 31px; 
-            height: 20px;
-            position: relative;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-        }
-
-        /* The Cyan glitch layer stays consistent */
-        .tt-plus-btn::before {
-            content: ''; 
-            position: absolute; 
-            inset: 0;
-            background: #25F4EE; 
-            border-radius: 7px;
-            transform: translateX(-3px); 
-            z-index: 1;
-        }
-
-        /* The Magenta glitch layer stays consistent */
-        .tt-plus-btn::after {
-            content: ''; 
-            position: absolute; 
-            inset: 0;
-            background: #FE2C55; 
-            border-radius: 7px;
-            transform: translateX(3px); 
-            z-index: 1;
-        }
-
-        /* The Main Button Body - Colors now inverted */
-        .tt-plus-main {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: var(--text-main); /* Now dark in light mode, white in dark mode */
-            color: var(--bg-card);        /* Now white in light mode, dark in dark mode */
-            border-radius: 7px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            z-index: 2;
-        }
 
         /* --- Editable Fields --- */
         .editable { cursor: text; border-radius: 3px; outline: none; }
@@ -172,6 +124,58 @@
         .action-toggle { cursor: pointer; transition: transform 0.1s; }
         .action-toggle:active { transform: scale(0.9); }
 
+        /* --- UI Controls --- */
+        .controls { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 600px;}
+        .btn { padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; border: none; color: white; font-size: 14px; transition: 0.2s; }
+        .primary { background: var(--accent-blue); }
+        .secondary { background: #363636; }
+        .danger { background: var(--accent-red); }
+        .neutral { background: #555; }
+        .success { background: #00ba7c; }
+        
+        /* Dropdowns */
+        .dropdown { position: relative; }
+        .menu { display: none; position: absolute; bottom: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; min-width: 140px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.2); overflow: hidden;}
+        .menu.show { display: block; }
+        .menu button { display: block; width: 100%; padding: 12px; border: none; background: none; text-align: left; cursor: pointer; color: var(--text-main); font-weight: 500; transition: background 0.1s;}
+        .menu button:hover { background: rgba(128,128,128,0.1); }
+
+        /* --- Adaptive Grounded Nav Bar --- */
+        .v-nav {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin: 0 -12px -12px -12px; /* Pulls nav out of overlay padding */
+            padding: 10px 12px;
+            border-top: 1px solid var(--border);
+            background-color: var(--bg-card); /* Adapts to solid background */
+            color: var(--text-main);
+            text-shadow: none; /* Disables shadow in standard UI elements */
+            height: auto; 
+            box-sizing: border-box;
+            z-index: 20;
+        }
+        .v-nav .v-action-item,
+        .v-nav > div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+        .v-nav .v-action-item i {
+            font-size: 18px; 
+            margin-bottom: -1px; 
+        }
+        .v-nav .v-action-item span {
+            font-size: 8px;
+            font-weight: 500;
+            margin-top: 0;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
         /* --- Platform Specific Layouts --- */
         
         /* 1. Instagram */
@@ -186,7 +190,50 @@
         /* 2. TikTok */
         .tk-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 40%); z-index: 1; color: white; pointer-events: none;}
         .tk-right-col { position: absolute; right: 10px; bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; z-index: 2; color: white; pointer-events: auto;}
-        
+                .tk-plus-btn {
+            width: 31px; 
+            height: 20px;
+            position: relative;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+        /* The Cyan glitch layer */
+        .tk-plus-btn::before {
+            content: ''; 
+            position: absolute; 
+            inset: 0;
+            background: #25F4EE; 
+            border-radius: 7px;
+            transform: translateX(-3px); 
+            z-index: 1;
+        }
+        /* The Magenta glitch layer */
+        .tk-plus-btn::after {
+            content: ''; 
+            position: absolute; 
+            inset: 0;
+            background: #FE2C55; 
+            border-radius: 7px;
+            transform: translateX(3px); 
+            z-index: 1;
+        }
+
+        /* The Main Button Body */
+        .tk-plus-main {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: var(--text-main); 
+            color: var(--bg-card);       
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            z-index: 2;
+        }
+
         /* 3. Twitter / X */
         .tw-card { background: var(--bg-card); padding: 16px; display: flex; flex-direction: column; gap: 12px; height: 100%; box-sizing: border-box; }
         .tw-header { display: flex; gap: 10px; align-items: center; position: relative; }
@@ -287,60 +334,6 @@
         /* 5. Snapchat */
         .sc-overlay { position: absolute; inset: 0; z-index: 1; pointer-events: none;}
 
-        /* --- UI Controls --- */
-        .controls { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 600px;}
-        .btn { padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; border: none; color: white; font-size: 14px; transition: 0.2s; }
-        .primary { background: var(--accent-blue); }
-        .secondary { background: #363636; }
-        .danger { background: var(--accent-red); }
-        .neutral { background: #555; }
-        .success { background: #00ba7c; }
-        
-        /* Dropdowns */
-        .dropdown { position: relative; }
-        .menu { display: none; position: absolute; bottom: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; min-width: 140px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.2); overflow: hidden;}
-        .menu.show { display: block; }
-        .menu button { display: block; width: 100%; padding: 12px; border: none; background: none; text-align: left; cursor: pointer; color: var(--text-main); font-weight: 500; transition: background 0.1s;}
-        .menu button:hover { background: rgba(128,128,128,0.1); }
-
-        /* --- Adaptive Grounded Nav Bar --- */
-        .v-nav {
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin: 0 -12px -12px -12px; /* Pulls nav out of overlay padding */
-            padding: 10px 12px;
-            border-top: 1px solid var(--border);
-            background-color: var(--bg-card); /* Adapts to solid background */
-            color: var(--text-main);
-            text-shadow: none; /* Disables shadow in standard UI elements */
-            height: auto; 
-            box-sizing: border-box;
-            z-index: 20;
-        }
-
-        .v-nav .v-action-item,
-        .v-nav > div {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 0;
-        }
-
-        .v-nav .v-action-item i {
-            font-size: 18px; 
-            margin-bottom: -1px; 
-        }
-
-        .v-nav .v-action-item span {
-            font-size: 8px;
-            font-weight: 500;
-            margin-top: 0;
-            line-height: 1;
-            white-space: nowrap;
-        }
     </style>
 </head>
 <body>
@@ -584,8 +577,8 @@
                             <div class="v-action-item"><i class="fa-solid fa-house"></i><span>Home</span></div>
                             <div class="v-action-item"><i class="fa-solid fa-user-group"></i><span>Friends</span></div>
                             <div>
-                                <div class="tt-plus-btn">
-                                    <div class="tt-plus-main">
+                                <div class="tk-plus-btn">
+                                    <div class="tk-plus-main">
                                         <i class="fa-solid fa-plus"></i>
                                     </div>
                                 </div>
@@ -845,12 +838,19 @@
                 captureArea.style.height = '640px';
             }
 
+           // Always keep the main container transparent so PNG alpha works
+            captureArea.style.backgroundColor = 'transparent';
+
+            // Render the dynamic template
+            captureArea.innerHTML = templates[globalState.platform]();
+
+            // If there is NO post image, ensure nested cards (Twitter/YouTube) are also transparent
             const hasImage = !!globalState.images.post;
             if (!hasImage) {
-                captureArea.style.backgroundColor = 'transparent';
-            } else {
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                captureArea.style.backgroundColor = isDark ? '#000000' : '#ffffff';
+                const nestedCard = captureArea.querySelector('.tw-card, .yt-card');
+                if (nestedCard) {
+                    nestedCard.style.background = 'transparent';
+                }
             }
 
             captureArea.innerHTML = templates[globalState.platform]();
@@ -1031,53 +1031,49 @@
 
             html2canvas(captureArea, {
                 scale: scale,
-                backgroundColor: null,
+                backgroundColor: null, 
                 useCORS: true,
                 logging: false
             }).then(sourceCanvas => {
                 const outputCanvas = document.createElement('canvas');
                 const ctx = outputCanvas.getContext('2d');
                 
-                const placeholder = captureArea.querySelector('.post-image-placeholder');
+                const placeholder = captureArea.querySelector('.post-image-placeholder, .ig-body, .tk-overlay');
                 const rect = placeholder ? placeholder.getBoundingClientRect() : null;
                 const areaRect = captureArea.getBoundingClientRect();
                 
                 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                 const bgColor = isDark ? "#000000" : "#ffffff";
 
-                if (isLandscapeRatio) {
-                    outputCanvas.width = finalWidth;
-                    outputCanvas.height = finalHeight;
-                    
-                    const xOffset = (finalWidth - sourceCanvas.width) / 2;
+                outputCanvas.width = isLandscapeRatio ? finalWidth : finalHeight;
+                outputCanvas.height = isLandscapeRatio ? finalHeight : finalWidth;
 
-                    ctx.fillStyle = bgColor;
-                    const barWidth = Math.ceil(xOffset);
-                    if (barWidth > 0) {
-                        ctx.fillRect(0, 0, barWidth, finalHeight);
-                        ctx.fillRect(finalWidth - barWidth, 0, barWidth, finalHeight);
-                    }
-
-                    if (rect) {
-                        drawHoleFrame(ctx, rect, areaRect, scale, xOffset, 0, bgColor);
-                    }
-
-                    ctx.drawImage(sourceCanvas, xOffset, 0);
-                    downloadCanvas(outputCanvas, 'landscape');
-                } else {
-                    outputCanvas.width = finalHeight; 
-                    outputCanvas.height = finalWidth;
-                    
+                if (!isLandscapeRatio) {
                     ctx.translate(outputCanvas.width, 0);
                     ctx.rotate(Math.PI / 2);
-
-                    if (rect) {
-                        drawHoleFrame(ctx, rect, areaRect, scale, 0, 0, bgColor);
-                    }
-
-                    ctx.drawImage(sourceCanvas, 0, 0);
-                    downloadCanvas(outputCanvas, 'portrait');
                 }
+
+                const xOffset = isLandscapeRatio ? (finalWidth - sourceCanvas.width) / 2 : 0;
+
+                // 1. Fill the entire canvas with the theme background color first
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, sourceCanvas.width + (xOffset * 2), sourceCanvas.height);
+
+                // 2. "Punch a hole" through the background to make it transparent again
+                if (rect) {
+                    const holeX = (rect.left - areaRect.left) * scale + xOffset;
+                    const holeY = (rect.top - areaRect.top) * scale;
+                    const holeW = rect.width * scale;
+                    const holeH = rect.height * scale;
+
+                    // This tells the canvas to REMOVE pixels in this area rather than painting over them
+                    ctx.clearRect(holeX, holeY, holeW, holeH);
+                }
+
+                // 3. Draw the UI (which is transparent) on top of the background-with-a-hole
+                ctx.drawImage(sourceCanvas, xOffset, 0);
+                
+                downloadCanvas(outputCanvas, isLandscapeRatio ? 'landscape' : 'portrait');
             });
         }
 
